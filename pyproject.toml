@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "folivora---data-engineering"
+version = "0.1.0"
+description = ""
+authors = ["Julian Boronat <boronat.j.e@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9.2"
+pyyaml = "^6.0.0"
+click = "^7.1.2"
+backoff = "^1.10.0"
+requests = "^2.25.1"
+boto3 = "^1.17.49"
+pandas = "==2.0.2"
+sqlalchemy = "==1.4.10"
