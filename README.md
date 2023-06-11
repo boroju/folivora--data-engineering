@@ -1,2 +1,2 @@
-# folivora--data-engineering
-Data engineering tasks within Folivora Vegan
+# folivora---data-engineering
+Data engineering tasks for Folivora Vegan.

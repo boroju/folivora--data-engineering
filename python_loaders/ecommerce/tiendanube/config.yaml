@@ -1,0 +1,15 @@
+# Build Api Url
+# https://{{api_url}}/{{store_id}}/{{endpoint}}/
+
+tiendanube:
+  api_name: "tiendanube"
+  api_url: "XXXX"
+  api_key: "XXXX"
+  api_host: "{API_URL} + '/' + {STORE_ID} + '/'"
+  store_id: "XXXX"
+  data_path: "/data/"
+
+customers_loader:
+  filename: "customers.csv"
+  filepath: DATA_PATH + CUSTOMERS_FILE
+  endpoint: "customers"
