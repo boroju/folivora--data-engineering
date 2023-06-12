@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "folivora---data-engineering"
+name = "folivora--data-engineering"
 version = "0.1.0"
 description = ""
 authors = ["Julian Boronat <boronat.j.e@gmail.com>"]
