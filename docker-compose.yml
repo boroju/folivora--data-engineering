@@ -4,6 +4,4 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile
-    ports:
-      - "80:80"
     image: folivora--data-engineering

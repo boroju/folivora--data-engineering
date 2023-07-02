@@ -1,0 +1,8 @@
+gradio==3.33.1
+gradio-client==0.2.5
+Chroma==0.2.0
+langchain==0.0.192
+langchainplus-sdk==0.0.4
+openai==0.27.8
+chromadb==0.3.25
+tiktoken==0.3.2
