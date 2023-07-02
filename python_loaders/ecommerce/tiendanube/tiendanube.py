@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 from python_loaders.base import BasePythonLoader
 from python_loaders.utils import BearerAuthApi, logging
 from datetime import datetime
@@ -57,7 +58,7 @@ class TiendanubeLoader(BasePythonLoader):
         # Check if data exists
         if len(data.items()) > 0:
             df = pd.DataFrame.from_dict(data["customers"])
-            print("Storing data in " + customers_csv)
+            logging.info("Storing data in " + customers_csv)
             df.to_csv(customers_csv, index=False)
 
             logging.info("Data Printed.")
@@ -88,35 +89,52 @@ class TiendanubeLoader(BasePythonLoader):
 
         return response.json()
 
-    def get_request_all_customers_json(self):
+    def get_request_all_customers_json(self, page_number: int):
         """ Get Json content for an API Call
 
         Returns:
             json
         """
-
+        last_page = False
         response = self.api.get(
             endpoint=self.config["CUSTOMERS_ENDPOINT"],
             params={
                 # Amount of results - max per page is 200
-                'per_page': 200
+                'per_page': 200,
+                'page': page_number
             },
             extra_headers={"Content-Type": "application/json"}
         )
         if not response.ok:
-            logging.error(
-                f"There was an error with API endpoint ({response.status_code})."
-            )
-            logging.error(f"Response:\n {response.text}")
-            raise Exception(f"API Error: error code {response.status_code}")
+            response_json = json.loads(response.text)
+            if response.status_code == 404 \
+                    and 'description' in response_json \
+                    and 'Last page' in response_json['description']:
+                last_page = True
+                logging.info("Reaching last page of Customers!")
+                logging.info("Last page is:" + str(page_number))
+            else:
+                logging.error(
+                    f"There was an error with API endpoint ({response.status_code})."
+                )
+                logging.error(f"Response:\n {response.text}")
+                raise Exception(f"API Error: error code {response.status_code}")
 
-        return response.json()
+        logging.info("Page number: " + str(page_number))
+        return response.json(), last_page
 
     def get_all_customers(self) -> List[Dict]:
         """ Get All Customers from Tiendanube API """
-        r = self.get_request_all_customers_json()
+        rows = []
+        last_page = False
+        page = 1
+        while not last_page:
+            r, last_page = self.get_request_all_customers_json(page_number=page)
+            if not last_page:
+                logging.info("Appending more customers...")
+                rows.append(self.parse_all_customers(r))
+            page = page + 1
 
-        rows = self.parse_all_customers(r)
         return rows
 
     def parse_all_customers(self, customers):
