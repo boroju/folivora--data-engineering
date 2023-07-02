@@ -4,7 +4,6 @@ from python_loaders.utils import BearerAuthApi, logging
 from datetime import datetime
 from typing import Dict, List
 
-
 class TiendanubeLoader(BasePythonLoader):
     name = "tiendanube"
 
@@ -48,7 +47,7 @@ class TiendanubeLoader(BasePythonLoader):
         else:
             data = {}
 
-        customers_csv = self.config["CUSTOMER_CSV"]
+        customers_csv = self.config["CUSTOMERS_CSV"]
         # Check if data exists
         if len(data.items()) > 0:
             df = pd.DataFrame.from_dict(data["customers"])
@@ -67,7 +66,7 @@ class TiendanubeLoader(BasePythonLoader):
         """
 
         response = self.api.get(
-            endpoint=self.config["customers_loader"]["endpoint"],
+            endpoint=self.config["CUSTOMERS_ENDPOINT"],
             params={},
             extra_headers={"Content-Type": "application/json"}
         )

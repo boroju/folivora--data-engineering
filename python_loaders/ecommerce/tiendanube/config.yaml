@@ -1,15 +1,9 @@
 # Build Api Url
 # https://{{api_url}}/{{store_id}}/{{endpoint}}/
 
-tiendanube:
-  api_name: "tiendanube"
-  api_url: "XXXX"
-  api_key: "XXXX"
-  api_host: "{API_URL} + '/' + {STORE_ID} + '/'"
-  store_id: "XXXX"
-  data_path: "/data/"
-
-customers_loader:
-  filename: "customers.csv"
-  filepath: DATA_PATH + CUSTOMERS_FILE
-  endpoint: "customers"
+API_URL: "https://api.tiendanube.com/v1/"
+STORE_ID: "1211175"
+API_KEY: "4934126cce4521d35fa3fd1152e42f1ebc4e5e15"
+API_HOST: "https://api.tiendanube.com/v1/1211175/"
+CUSTOMERS_ENDPOINT: "customers"
+CUSTOMERS_CSV: "customers.csv"

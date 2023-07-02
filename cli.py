@@ -1,5 +1,6 @@
 from python_loaders.base import BasePythonLoader
 import click
+import os
 from typing import List, Dict, Type
 import glob
 import os.path as op
@@ -7,6 +8,7 @@ from importlib import import_module
 import inspect
 from abc import ABC
 
+os.environ['NUMEXPR_MAX_THREADS'] = '8'
 
 def get_python_loaders_list() -> List[Type[BasePythonLoader]]:
     """
