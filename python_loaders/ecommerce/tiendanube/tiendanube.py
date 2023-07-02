@@ -16,11 +16,17 @@ class TiendanubeLoader(BasePythonLoader):
             load_type: with the possible following options to load data --> all_customers or all_orders
         Returns:
             Nothing
+        Documentation:
+            https://tiendanube.github.io/api-documentation/intro
         """
         super(TiendanubeLoader, self).__init__(*args, **kwargs)
 
         # Dates to a "%Y%m%d"
         self.processed_date = str(datetime.now().date().strftime("%Y%m%d"))
+
+        # Date Today ISO Format
+        self.date_today_iso = datetime.now().date().isoformat()
+        logging.info(self.date_today_iso)
 
         # create api auth
         api_key = self.config["API_KEY"]
@@ -58,6 +64,30 @@ class TiendanubeLoader(BasePythonLoader):
         else:
             logging.critical("No data.")
 
+    def get_request_customers_created_after_date_json(self):
+        """ Get Json content for an API Call
+
+        Returns:
+            json
+        """
+
+        response = self.api.get(
+            endpoint=self.config["CUSTOMERS_ENDPOINT"],
+            # Show Customers created after date (ISO 8601 format)
+            params={
+                'created_at_min': self.date_today_iso
+            },
+            extra_headers={"Content-Type": "application/json"}
+        )
+        if not response.ok:
+            logging.error(
+                f"There was an error with API endpoint ({response.status_code})."
+            )
+            logging.error(f"Response:\n {response.text}")
+            raise Exception(f"API Error: error code {response.status_code}")
+
+        return response.json()
+
     def get_request_all_customers_json(self):
         """ Get Json content for an API Call
 
@@ -67,7 +97,10 @@ class TiendanubeLoader(BasePythonLoader):
 
         response = self.api.get(
             endpoint=self.config["CUSTOMERS_ENDPOINT"],
-            params={},
+            params={
+                # Amount of results - max per page is 200
+                'per_page': 200
+            },
             extra_headers={"Content-Type": "application/json"}
         )
         if not response.ok:
