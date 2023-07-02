@@ -1,7 +1,19 @@
 # Dockerfile
 
-# Use the base Python 3.9 image
-FROM python:3.9
+# Base image
+FROM python:3.9-slim-buster
+
+# Set working directory
+WORKDIR /app
+
+# Copy project files to working directory
+COPY requirements.txt requirements.txt
+RUN apt-get update \
+    && apt-get clean
+
+# Install dependencies
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 RUN apt-get update \
     &&  apt-get install -y \
@@ -10,9 +22,6 @@ RUN apt-get update \
         libsasl2-dev \
         curl
 
-# Set the working directory to /python_loaders
-WORKDIR /python_loaders
-
 RUN pip install -U pip
 
 # Poetry installation
@@ -20,13 +29,10 @@ RUN pip install poetry==1.1.15
 ENV PATH="/root/.poetry/bin:${PATH}"
 
 # Poetry dependencies
-COPY pyproject.toml  /python_loaders/pyproject.toml
-COPY poetry.lock  /python_loaders/poetry.lock
-#Hack to avoid distutils error TODO: Try removing manually from 'site-packages'
-#RUN pip install entrypoints==0.3 --ignore-installed
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction -v
 
 # Copy your application files to the container
-COPY . /python_loaders
+COPY /python_loaders .

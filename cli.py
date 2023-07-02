@@ -21,7 +21,6 @@ def get_python_loaders_list() -> List[Type[BasePythonLoader]]:
     base_path = op.dirname(op.abspath(__file__))
     python_loaders_path = op.join(
         base_path,
-        'app',
         'python_loaders',
         '**',
         '*.py'
