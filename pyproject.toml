@@ -7,10 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4"
-pyspark = "^3.5.1"
-pandas = "^2.2.2"
 requests = "^2.31.0"
-pytest = "^8.1.1"
 pymongo = {version = "3.11", extras = ["srv"]}
 fastapi = "^0.110.2"
 uvicorn = "^0.29.0"
