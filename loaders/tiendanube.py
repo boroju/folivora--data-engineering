@@ -1,32 +1,24 @@
-from app.utils import BearerAuthApi
-from app.utils import logging
-from app.utils import Dict, List
+from utils import BearerAuthApi
+from utils import logging
+from utils import Dict, List
 from datetime import datetime
-import pandas as pd
-import configparser
-
-config = configparser.ConfigParser()
-config.read('app/config/config.ini')
-
-# Read api specs
-api_key = config['api']['key']
-api_host = config['api']['host']
 
 
-class TiendanubeLoader(BearerAuthApi):
-    name = "tiendanube"
+class TiendanubeLoader:
+    name = "tiendanube_loader"
 
     def __init__(self,
-                 load_type: str = None,
-                 *args,
-                 **kwargs):
+                 api_key: str = None,
+                 api_host: str = None,
+                 load_type: str = None):
         """ Init function to build TiendanubeLoader
         Args:
+            api_key: API key for authentication
+            api_host: API host URL
             load_type: with the possible following options to load data --> all_customers or all_orders
         Returns:
             Nothing
         """
-        super(TiendanubeLoader, self).__init__(*args, **kwargs)
 
         # Dates to a "%Y%m%d"
         self.processed_date = str(datetime.now().date().strftime("%Y%m%d"))
@@ -54,11 +46,8 @@ class TiendanubeLoader(BearerAuthApi):
 
         # Check if data exists
         if len(data.items()) > 0:
-            df = pd.DataFrame.from_dict(data["customers"])
-            print("Storing data in " + "./customers.csv")
-            df.to_csv("./customers.csv", index=False)
-
-            logging.info("Data Printed.")
+            # Persist data if needed
+            logging.info("There is data.")
         else:
             logging.critical("No data.")
 
@@ -174,30 +163,3 @@ class TiendanubeLoader(BearerAuthApi):
 
             rows.append(row)
         return rows
-
-    def convert_to_datetime(timestamp_string):
-        """
-        To convert string to datetime in the panda dataframe extracted.
-        Sometimes the string contains the milliseconds, sometimes not. This is to
-        ensure we are parsing the time even if it has multiple formats possible.
-        :param timestamp_string: timestamp string
-        :return: datetime
-        """
-        if not timestamp_string:
-            return None
-        timestamp_string = timestamp_string.upper()
-        if timestamp_string[-1] != "Z":
-            timestamp_string += "Z"
-
-        potential_formats = [
-            "%Y-%m-%dT%H:%M:%S.%fZ",
-            "%Y-%m-%dT%H:%M:%SZ",
-            "%Y-%m-%dT%H:%MZ",
-            "%Y-%m-%dT%HZ"
-        ]
-        for fmt in potential_formats:
-            try:
-                return datetime.strptime(timestamp_string, fmt)
-            except ValueError:
-                continue
-        return None
