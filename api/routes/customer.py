@@ -2,14 +2,17 @@ from fastapi import APIRouter, HTTPException
 from data.customer_collection import CustomerCollection
 from loaders.tiendanube import TiendanubeLoader
 from api.models.customer import Customer
-from utils import find_project_root_path
 from api.schema.schemas import customers_serial
+from config_reader import ConfigReader
 
-# Read config file
-config_file = find_project_root_path() + '/config.ini'
+# Initialize ConfigReader
+config_reader = ConfigReader()
 
 # Initialize customer_collection
-customer_collection = CustomerCollection(config_file=config_file)
+customer_collection = CustomerCollection()
+
+# Get api configuration
+tiendanube_config = config_reader.get_tiendanube_config()
 
 customer = APIRouter()
 
@@ -25,8 +28,8 @@ async def get_customers():
 @customer.post("/customer/refresh")
 async def refresh_customers_on_db():
     # Initialize TiendanubeLoader
-    tiendanube_api = TiendanubeLoader(api_key=config['tiendanube']['api_key'],
-                                      api_host=config['tiendanube']['host'],
+    tiendanube_api = TiendanubeLoader(api_key=tiendanube_config['tiendanube_api_key'],
+                                      api_host=tiendanube_config['tiendanube_host'],
                                       load_type="all_customers")
 
     # Fetch all customers from TiendanubeLoader
@@ -42,6 +45,3 @@ async def refresh_customers_on_db():
     customer_collection.insert_many(customers)
 
     return {"message": "Customers refreshed successfully!"}
-
-# Example usage:
-# This endpoint can be triggered by sending a POST request to "/refresh_all_customers"
