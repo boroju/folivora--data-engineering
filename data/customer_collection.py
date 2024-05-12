@@ -1,11 +1,11 @@
 from data.database import MongoDBHandler
 
 
-class CustomerCollection:
-    def __init__(self, config_file):
-        self.db_handler = MongoDBHandler(config_file)
-        self.customer_db = self.db_handler.get_database('customer_db')
-        self.customer_collection = self.db_handler.get_collection('customer_db', 'customer_collection')
+class CustomerCollection(MongoDBHandler):
+    def __init__(self):
+        super().__init__()
+        self.customer_db = self.get_database('customer_db')
+        self.customer_collection = self.get_collection('customer_db', 'customer_collection')
 
     def insert_customer(self, customer_data):
         self.customer_collection.insert_one(customer_data)
@@ -27,6 +27,3 @@ class CustomerCollection:
 
     def insert_many(self, customers):
         self.customer_collection.insert_many(customers)
-
-    def close_connection(self):
-        self.db_handler.close_connection()
