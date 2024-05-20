@@ -9,6 +9,10 @@ __pycache__/
 # Configuration files
 config.ini
 
+# DuckDB
+*.duckdb
+*.duckdb.wal
+
 # Distribution / packaging
 .Python
 build/
