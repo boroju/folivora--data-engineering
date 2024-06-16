@@ -1,4 +1,4 @@
-from api.models.customer import Customer
+from app.api.models.customer import Customer
 from typing import Dict, List
 
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from data.customer_collection import CustomerCollection
-from loaders.tiendanube import TiendanubeLoader
-from api.models.customer import Customer
-from api.schema.schemas import customers_serial
+from app.loaders.tiendanube import TiendanubeLoader
+from app.api.models.customer import Customer
+from app.api.schema.schemas import customers_serial
 from config_reader import ConfigReader
 
 # Initialize ConfigReader

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from api.routes.customer import customer
-from api.routes.book import book as book_router
+from app.api.routes.customer import customer
+from app.api.routes import book as book_router
 from docs import tags_metadata
 import uvicorn
 
