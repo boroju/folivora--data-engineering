@@ -65,7 +65,7 @@ def find_project_root_path():
     current_dir = os.path.abspath(os.path.dirname(__file__))
 
     # Define the marker file or directory
-    marker_file = '.gitignore'
+    marker_file = '../../.gitignore'
 
     # Navigate up the directory tree until the marker file is found
     while current_dir != '/':
