@@ -6,6 +6,7 @@ from app import ROOT_DIR
 from app.db.database import DuckDBDatabase
 from app.loaders.parse_orders import parse_orders
 from app.loaders.parse_customers import parse_customers
+from app.loaders.parse_abandoned_checkouts import parse_abandoned_checkouts
 import pandas as pd
 import os
 
@@ -57,7 +58,7 @@ class TiendanubeLoader:
             logging.info(f"Dropping database files if exists...")
             self.db.drop_database_file()
 
-            logging.info(f"Saving customer data into database...")
+            logging.info(f"Saving customers data into database...")
             self.save_into_db(df=customers_df, table_name="customers")
             logging.info(f"Data saved successfully.")
 
@@ -66,6 +67,37 @@ class TiendanubeLoader:
             logging.info(f"Connection closed successfully.")
 
             logging.info(f"TiendanubeLoader call for getting All Customers has been successfully executed!")
+
+        if self.load_type == "all_abandoned_checkouts":
+            logging.info("Executing TiendanubeLoader call for getting All Abandoned Carts...")
+
+            logging.info(f"Executing api calls...")
+            abandoned_checkouts = self.get_all_abandoned_checkouts()
+            logging.info(f"Creating abandoned_checkouts_df.")
+            abandoned_checkouts_df = pd.DataFrame(abandoned_checkouts)
+
+            logging.info("Dataframe abandoned_checkouts_df Columns:")
+            logging.info(abandoned_checkouts_df.columns)
+            logging.info("Dataframe abandoned_checkouts_df Head(5):")
+            logging.info(abandoned_checkouts_df.head(5))
+
+            logging.info(f"Connect to the database...")
+            con = self.db.connect()
+
+            logging.info(f"Saving abandoned checkouts data into database...")
+
+            logging.info(f"Creating table abandoned_checkouts...")
+            logging.info(f"Inserting data into abandoned_checkouts...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS abandoned_checkouts AS SELECT * FROM abandoned_checkouts_df")
+            con.commit()
+
+            logging.info(f"Data saved successfully.")
+
+            logging.info(f"Closing connection to database...")
+            self.db.disconnect()
+            logging.info(f"Connection closed successfully.")
+
+            logging.info(f"TiendanubeLoader call for getting All Abandoned Carts has been successfully executed!")
 
         if self.load_type == "all_orders":
 
@@ -200,6 +232,36 @@ class TiendanubeLoader:
             page_number += 1
 
         return customers
+
+    def get_all_abandoned_checkouts(self) -> List[Dict]:
+        """ Get All Customers from Tiendanube API
+            Endpoint: GET / abandoned-checkout
+            - Api documentation: https://tiendanube.github.io/api-documentation/resources/abandoned-checkout
+            :return: List of abandoned-checkout -> List[Dict]
+        """
+        abandoned_checkouts = []
+        # Start from the first page
+        page_number = 1
+
+        while True:
+            logging.info(
+                f"Processing abandoned_checkouts from Page Number: {page_number}"
+            )
+            r = self.get_request_json_till_last_page(endpoint_name="checkouts", page_n=page_number)
+            # Check if response is empty (including last page case)
+            if not r:
+                logging.info(
+                    f"Reached the last page."
+                )
+                break
+
+            # Append parsed abandoned_checkouts
+            abandoned_checkouts.extend(parse_abandoned_checkouts(r))
+
+            # Increment page number for next iteration
+            page_number += 1
+
+        return abandoned_checkouts
 
     # TODO: This does not work. Review later!
     def save_into_db(self, df: pd.DataFrame, table_name: str):

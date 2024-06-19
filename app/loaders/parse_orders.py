@@ -76,6 +76,7 @@ def parse_orders(orders: Dict) -> List[Dict]:
             "shipping_store_branch_name": reg.get('shipping_store_branch_name', None),
             "shipping_store_branch_extra": reg.get('shipping_store_branch_extra', None),
             "shipping_pickup_type": reg.get('shipping_pickup_type', None),
+            "note": reg.get('note', None),
             "storefront": reg.get('storefront', None),
             "created_at": reg.get('created_at', None),
             "updated_at": reg.get('updated_at', None),
