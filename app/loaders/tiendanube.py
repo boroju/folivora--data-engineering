@@ -8,6 +8,7 @@ from app.loaders.parsers.parse_orders import parse_orders
 from app.loaders.parsers.parse_customers import parse_customers
 from app.loaders.parsers.parse_abandoned_checkouts import parse_abandoned_checkouts
 from app.loaders.parsers.parse_categories import parse_categories
+from app.loaders.parsers.parse_products import parse_products
 import pandas as pd
 import os
 
@@ -99,6 +100,37 @@ class TiendanubeLoader:
             logging.info(f"Connection closed successfully.")
 
             logging.info(f"TiendanubeLoader call for getting All Abandoned Carts has been successfully executed!")
+
+        if self.load_type == "all_products":
+            logging.info("Executing TiendanubeLoader call for getting All Products...")
+
+            logging.info(f"Executing api calls...")
+            products = self.get_all_products()
+            logging.info(f"Creating products_df.")
+            products_df = pd.DataFrame(products)
+
+            logging.info("Dataframe products_df Columns:")
+            logging.info(products_df.columns)
+            logging.info("Dataframe products_df Head(5):")
+            logging.info(products_df.head(5))
+
+            logging.info(f"Connect to the database...")
+            con = self.db.connect()
+
+            logging.info(f"Saving products data into database...")
+
+            logging.info(f"Creating table products...")
+            logging.info(f"Inserting data into products...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS products AS SELECT * FROM products_df")
+            con.commit()
+
+            logging.info(f"Data saved successfully.")
+
+            logging.info(f"Closing connection to database...")
+            self.db.disconnect()
+            logging.info(f"Connection closed successfully.")
+
+            logging.info(f"TiendanubeLoader call for getting All Products has been successfully executed!")
 
         if self.load_type == "all_categories":
             logging.info("Executing TiendanubeLoader call for getting All Categories...")
@@ -234,6 +266,36 @@ class TiendanubeLoader:
             page_number += 1
 
         return orders
+
+    def get_all_products(self) -> List[Dict]:
+        """ Get All Products from Tiendanube API
+            Endpoint: GET / products
+            - Api documentation: https://tiendanube.github.io/api-documentation/resources/product
+            :return: List of products -> List[Dict]
+        """
+        products = []
+        # Start from the first page
+        page_number = 1
+
+        while True:
+            logging.info(
+                f"Processing products from Page Number: {page_number}"
+            )
+            r = self.get_request_json_till_last_page(endpoint_name="products", page_n=page_number)
+            # Check if response is empty (including last page case)
+            if not r:
+                logging.info(
+                    f"Reached the last page."
+                )
+                break
+
+            # Append parsed products
+            products.extend(parse_products(r))
+
+            # Increment page number for next iteration
+            page_number += 1
+
+        return products
 
     def get_all_customers(self) -> List[Dict]:
         """ Get All Customers from Tiendanube API
