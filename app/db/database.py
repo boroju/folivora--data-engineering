@@ -1,7 +1,6 @@
 import os
 import duckdb as db
-from app.loaders.utils import logging
-from app import ROOT_DIR
+from app.ingestion.loaders import logging
 
 
 class DuckDBDatabase:
