@@ -1,6 +1,6 @@
 import os
 import duckdb as db
-from app.ingestion.loaders import logging
+from app.ingestion.loaders.utils import logging
 
 
 class DuckDBDatabase:
