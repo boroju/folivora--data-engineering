@@ -4,9 +4,10 @@ from app.loaders.utils import Dict, List
 from datetime import datetime
 from app import ROOT_DIR
 from app.db.database import DuckDBDatabase
-from app.loaders.parse_orders import parse_orders
-from app.loaders.parse_customers import parse_customers
-from app.loaders.parse_abandoned_checkouts import parse_abandoned_checkouts
+from app.loaders.parsers.parse_orders import parse_orders
+from app.loaders.parsers.parse_customers import parse_customers
+from app.loaders.parsers.parse_abandoned_checkouts import parse_abandoned_checkouts
+from app.loaders.parsers.parse_categories import parse_categories
 import pandas as pd
 import os
 
@@ -98,6 +99,37 @@ class TiendanubeLoader:
             logging.info(f"Connection closed successfully.")
 
             logging.info(f"TiendanubeLoader call for getting All Abandoned Carts has been successfully executed!")
+
+        if self.load_type == "all_categories":
+            logging.info("Executing TiendanubeLoader call for getting All Categories...")
+
+            logging.info(f"Executing api calls...")
+            categories = self.get_all_categories()
+            logging.info(f"Creating categories_df.")
+            categories_df = pd.DataFrame(categories)
+
+            logging.info("Dataframe categories_df Columns:")
+            logging.info(categories_df.columns)
+            logging.info("Dataframe categories_df Head(5):")
+            logging.info(categories_df.head(5))
+
+            logging.info(f"Connect to the database...")
+            con = self.db.connect()
+
+            logging.info(f"Saving categories data into database...")
+
+            logging.info(f"Creating table categories...")
+            logging.info(f"Inserting data into categories...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS categories AS SELECT * FROM categories_df")
+            con.commit()
+
+            logging.info(f"Data saved successfully.")
+
+            logging.info(f"Closing connection to database...")
+            self.db.disconnect()
+            logging.info(f"Connection closed successfully.")
+
+            logging.info(f"TiendanubeLoader call for getting All Categories has been successfully executed!")
 
         if self.load_type == "all_orders":
 
@@ -262,6 +294,36 @@ class TiendanubeLoader:
             page_number += 1
 
         return abandoned_checkouts
+
+    def get_all_categories(self) -> List[Dict]:
+        """ Get All Customers from Tiendanube API
+            Endpoint: GET / category
+            - Api documentation: https://tiendanube.github.io/api-documentation/resources/category
+            :return: List of abandoned-checkout -> List[Dict]
+        """
+        categories = []
+        # Start from the first page
+        page_number = 0
+
+        while True:
+            logging.info(
+                f"Processing categories from Page Number: {page_number}"
+            )
+            r = self.get_request_json_till_last_page(endpoint_name="categories", page_n=page_number)
+            # Check if response is empty (including last page case)
+            if not r:
+                logging.info(
+                    f"Reached the last page."
+                )
+                break
+
+            # Append parsed categories
+            categories.extend(parse_categories(r))
+
+            # Increment page number for next iteration
+            page_number += 1
+
+        return categories
 
     # TODO: This does not work. Review later!
     def save_into_db(self, df: pd.DataFrame, table_name: str):
