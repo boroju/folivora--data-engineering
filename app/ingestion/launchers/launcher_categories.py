@@ -1,4 +1,4 @@
-from app.loaders.tiendanube import TiendanubeLoader
+from app.ingestion.loaders.tiendanube import TiendanubeLoader
 from dotenv import load_dotenv
 import os
 

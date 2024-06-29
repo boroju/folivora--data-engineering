@@ -1,14 +1,14 @@
-from app.loaders.utils import BearerAuthApi
-from app.loaders.utils import logging
-from app.loaders.utils import Dict, List
+from app.ingestion.loaders.utils import BearerAuthApi
+from app.ingestion.loaders.utils import logging
+from app.ingestion.loaders.utils import Dict, List
 from datetime import datetime
 from app import ROOT_DIR
 from app.db.database import DuckDBDatabase
-from app.loaders.parsers.parse_orders import parse_orders
-from app.loaders.parsers.parse_customers import parse_customers
-from app.loaders.parsers.parse_abandoned_checkouts import parse_abandoned_checkouts
-from app.loaders.parsers.parse_categories import parse_categories
-from app.loaders.parsers.parse_products import parse_products
+from app.ingestion.loaders.parsers.parse_orders import parse_orders
+from app.ingestion.loaders.parsers.parse_customers import parse_customers
+from app.ingestion.loaders.parsers.parse_abandoned_checkouts import parse_abandoned_checkouts
+from app.ingestion.loaders.parsers.parse_categories import parse_categories
+from app.ingestion.loaders.parsers.parse_products import parse_products
 import pandas as pd
 import os
 
@@ -56,12 +56,19 @@ class TiendanubeLoader:
             logging.info("Dataframe customers_df Head(5):")
             logging.info(customers_df.head(5))
 
-            # TODO: Remove below lines after testing
-            logging.info(f"Dropping database files if exists...")
-            self.db.drop_database_file()
+            logging.info(f"Connect to the database...")
+            con = self.db.connect()
 
             logging.info(f"Saving customers data into database...")
-            self.save_into_db(df=customers_df, table_name="customers")
+
+            logging.info(f"Creating schema [raw] if not exists...")
+            con.sql(f"CREATE SCHEMA IF NOT EXISTS raw;")
+
+            logging.info(f"Creating table raw.customers...")
+            logging.info(f"Inserting data into raw.customers...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS raw.customers AS SELECT * FROM customers_df")
+            con.commit()
+
             logging.info(f"Data saved successfully.")
 
             logging.info(f"Closing connection to database...")
@@ -88,9 +95,12 @@ class TiendanubeLoader:
 
             logging.info(f"Saving abandoned checkouts data into database...")
 
-            logging.info(f"Creating table abandoned_checkouts...")
-            logging.info(f"Inserting data into abandoned_checkouts...")
-            con.sql(f"CREATE TABLE IF NOT EXISTS abandoned_checkouts AS SELECT * FROM abandoned_checkouts_df")
+            logging.info(f"Creating schema [raw] if not exists...")
+            con.sql(f"CREATE SCHEMA IF NOT EXISTS raw;")
+
+            logging.info(f"Creating table raw.abandoned_checkouts...")
+            logging.info(f"Inserting data into raw.abandoned_checkouts...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS raw.abandoned_checkouts AS SELECT * FROM abandoned_checkouts_df")
             con.commit()
 
             logging.info(f"Data saved successfully.")
@@ -119,9 +129,12 @@ class TiendanubeLoader:
 
             logging.info(f"Saving products data into database...")
 
-            logging.info(f"Creating table products...")
-            logging.info(f"Inserting data into products...")
-            con.sql(f"CREATE TABLE IF NOT EXISTS products AS SELECT * FROM products_df")
+            logging.info(f"Creating schema [raw] if not exists...")
+            con.sql(f"CREATE SCHEMA IF NOT EXISTS raw;")
+
+            logging.info(f"Creating table raw.products...")
+            logging.info(f"Inserting data into raw.products...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS raw.products AS SELECT * FROM products_df")
             con.commit()
 
             logging.info(f"Data saved successfully.")
@@ -150,9 +163,12 @@ class TiendanubeLoader:
 
             logging.info(f"Saving categories data into database...")
 
-            logging.info(f"Creating table categories...")
-            logging.info(f"Inserting data into categories...")
-            con.sql(f"CREATE TABLE IF NOT EXISTS categories AS SELECT * FROM categories_df")
+            logging.info(f"Creating schema [raw] if not exists...")
+            con.sql(f"CREATE SCHEMA IF NOT EXISTS raw;")
+
+            logging.info(f"Creating table raw.categories...")
+            logging.info(f"Inserting data into raw.categories...")
+            con.sql(f"CREATE TABLE IF NOT EXISTS raw.categories AS SELECT * FROM categories_df")
             con.commit()
 
             logging.info(f"Data saved successfully.")
@@ -163,41 +179,12 @@ class TiendanubeLoader:
 
             logging.info(f"TiendanubeLoader call for getting All Categories has been successfully executed!")
 
-        if self.load_type == "all_orders":
+        if self.load_type == "load_all_orders_in_chunks":
 
             logging.info("Executing TiendanubeLoader call for getting All Orders...")
 
             logging.info(f"Executing api calls...")
-            orders = self.get_all_orders()
-            logging.info(f"Creating orders_df.")
-            orders_df = pd.DataFrame(orders)
-
-            logging.info("Dataframe orders_df Columns:")
-            logging.info(orders_df.columns)
-            logging.info("Dataframe orders_df Head(5):")
-            logging.info(orders_df.head(5))
-
-            # TODO: Remove below lines after testing
-            logging.info(f"Dropping database files if exists...")
-            self.db.drop_database_file()
-
-            logging.info(f"Connect to the database...")
-            con = self.db.connect()
-
-            logging.info(f"Saving customer data into database...")
-            # TODO: This doesn't work. Review later!
-            # self.save_into_db(df=orders_df, table_name="orders")
-
-            logging.info(f"Creating table orders...")
-            logging.info(f"Inserting data into orders...")
-            con.sql(f"CREATE TABLE IF NOT EXISTS orders AS SELECT * FROM orders_df")
-            con.commit()
-
-            logging.info(f"Data saved successfully.")
-
-            logging.info(f"Closing connection to database...")
-            self.db.disconnect()
-            logging.info(f"Connection closed successfully.")
+            self.load_all_orders_in_chunks()
 
             logging.info(f"TiendanubeLoader call for getting All Orders has been successfully executed!")
 
@@ -235,19 +222,17 @@ class TiendanubeLoader:
 
         return response.json()
 
-    def get_all_orders(self) -> List[Dict]:
+    def load_all_orders_in_chunks(self):
         """ Get All Orders from Tiendanube API
             Endpoint: GET / orders
             - Api documentation: https://tiendanube.github.io/api-documentation/resources/order#get-orders
-            :return: List of orders -> List[Dict]
         """
-        orders = []
+
         # Start from the first page
         page_number = 0
 
-        # TODO: Remove comment from while True
-        # while True:
-        for i in range(0, 1):
+        while True:
+            orders = []
             logging.info(
                 f"Processing orders from Page Number: {page_number}"
             )
@@ -262,10 +247,28 @@ class TiendanubeLoader:
             # Append parsed orders
             orders.extend(parse_orders(r))
 
+            logging.info(f"Creating orders_df.")
+            orders_df = pd.DataFrame(orders)
+            logging.info("Dataframe orders_df Columns:")
+            logging.info(orders_df.columns)
+            logging.info("Dataframe orders_df Head(5):")
+            logging.info(orders_df.head(5))
+
+            logging.info(f"Connect to the database...")
+            con = self.db.connect()
+
+            logging.info(f"Inserting data into raw.orders...")
+            con.sql(f"INSERT INTO raw.orders SELECT * FROM orders_df")
+            con.commit()
+
+            logging.info(f"Data saved successfully.")
+
+            logging.info(f"Closing connection to database...")
+            self.db.disconnect()
+            logging.info(f"Connection closed successfully.")
+
             # Increment page number for next iteration
             page_number += 1
-
-        return orders
 
     def get_all_products(self) -> List[Dict]:
         """ Get All Products from Tiendanube API
@@ -386,19 +389,3 @@ class TiendanubeLoader:
             page_number += 1
 
         return categories
-
-    # TODO: This does not work. Review later!
-    def save_into_db(self, df: pd.DataFrame, table_name: str):
-        """
-        Create tables in the database
-        :return: None
-        """
-
-        # Connect to the database
-        con = self.db.connect()
-
-        logging.info(f"Creating table {table_name}...")
-        logging.info(f"Inserting data into {table_name}...")
-        con.sql(f"CREATE TABLE IF NOT EXISTS {table_name} AS SELECT * FROM {df}")
-
-        con.commit()

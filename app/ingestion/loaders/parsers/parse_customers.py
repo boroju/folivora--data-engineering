@@ -1,4 +1,4 @@
-from app.loaders.utils import Dict, List
+from app.ingestion.loaders.utils import Dict, List
 
 
 def parse_customers(customers: Dict) -> List[Dict]:
