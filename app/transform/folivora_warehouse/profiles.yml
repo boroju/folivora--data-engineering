@@ -1,0 +1,8 @@
+folivora_warehouse:
+  outputs:
+    duckdb:
+      type: duckdb
+      path: ./fv_warehouse.duckdb
+      threads: 1
+
+  target: duckdb
