@@ -1,0 +1,123 @@
+version: 2
+
+models:
+  - name: stg_products
+    columns:
+      - name: product_id
+        description: The natural key of the product
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: The product name
+        tests:
+          - not_null
+      - name: published
+        description: If the product is currently published on the e-commerce (true or false).
+        tests:
+          - not_null
+      - name: free_shipping
+        description: If the product has free shipping (true or false).
+        tests:
+          - not_null
+      - name: requires_shipping
+        description: If the product requires shipping (true or false).
+        tests:
+          - not_null
+      - name: created_at
+        description: Timestamp when the product was created
+        tests:
+          - not_null
+      - name: updated_at
+        description: Timestamp when the product was updated
+        tests:
+          - not_null
+
+  - name: stg_orders
+    columns:
+      - name: order_id
+        description: The natural key of the order
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: The natural key of the customer
+        tests:
+          - relationships:
+                to: ref('stg_customers')
+                field: customer_id
+          - not_null
+      - name: coupon_id
+        description: The natural key of the coupon
+      - name: subtotal
+        description: The subtotal of the order
+      - name: discount
+        description: The discount of the order
+      - name: total
+        description: The total of the order
+      - name: total_usd
+        description: The total of the order in USD
+      - name: gateway
+        description: The gateway used to pay the order
+      - name: gateway_name
+        description: The name of the gateway used to pay the order
+      - name: shipping_option
+        description: The shipping option of the order
+      - name: storefront
+        description: The storefront of the order
+      - name: created_at
+        description: Timestamp when the order was created
+      - name: updated_at
+        description: Timestamp when the order was updated
+      - name: completed_at_date
+        description: The date when the order was completed
+      - name: completed_at_timezone
+        description: The timezone when the order was completed
+      - name: next_action
+        description: The next action of the order
+      - name: payment_details_method
+        description: The payment method of the order
+      - name: payment_status
+        description: The payment status of the order
+      - name: paid_at
+        description: The date when the order was paid
+
+  - name: stg_customers
+    columns:
+      - name: customer_id
+        description: The natural key of the customer
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: The name of the customer
+        tests:
+          - not_null
+      - name: active
+        description: If the customer is active (true or false).
+        tests:
+          - not_null
+      - name: last_order_id
+        description: The natural key of the last order
+      - name: first_interaction
+        description: The first interaction of the customer
+      - name: created_at
+        description: Timestamp when the customer was created
+        tests:
+          - not_null
+      - name: updated_at
+        description: Timestamp when the customer was updated
+        tests:
+          - not_null
+      - name: default_address_city
+        description: The city of the default address
+      - name: default_address_locality
+        description: The locality of the default address
+      - name: default_address_province
+        description: The province of the default address
+      - name: default_address_zipcode
+        description: The zipcode of the default address
+      - name: accepts_marketing
+        description: If the customer accepts marketing (true or false).
+        tests:
+          - not_null

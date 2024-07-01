@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: folivora_warehouse
+    meta:
+      type: duckdb
+    database: folivora_warehouse

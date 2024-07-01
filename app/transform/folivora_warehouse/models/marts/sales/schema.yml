@@ -1,0 +1,130 @@
+version: 2
+
+models:
+
+  - name: fact_orders
+    columns:
+      - name: order_id
+        description: The natural key of the order
+        tests:
+          - not_null
+      - name: customer_id
+        description: The natural key of the customer
+        tests:
+          - relationships:
+                to: ref('dim_customers')
+                field: customer_id
+          - not_null
+      - name: coupon_id
+        description: The natural key of the coupon
+      - name: gateway_name
+        description: The name of the gateway used to pay the order
+        tests:
+          - not_null
+      - name: storefront
+        description: The storefront of the order
+        tests:
+          - not_null
+      - name: payment_status
+        description: The payment status of the order
+        tests:
+          - not_null
+      - name: subtotal
+        description: The subtotal of the order
+        tests:
+          - not_null
+      - name: discount
+        description: The discount of the order
+        tests:
+          - not_null
+      - name: total
+        description: The total of the order
+        tests:
+          - not_null
+      - name: total_usd
+        description: The total of the order in USD
+        tests:
+          - not_null
+      - name: date_created_iso
+        description: The date when the order was created (YYYYMMDD)
+        tests:
+          - not_null
+      - name: date_updated_iso
+        description: The date when the order was updated (YYYYMMDD)
+        tests:
+          - not_null
+      - name: date_completed_iso
+        description: The date when the order was completed (YYYYMMDD)
+        tests:
+          - not_null
+      - name: date_paid_iso
+        description: The date when the order was paid (YYYYMMDD)
+
+  - name: dim_customers
+    columns:
+      - name: customer_id
+        description: The natural key of the order
+        tests:
+          - not_null
+          - unique
+      - name: customer_name
+        description: The name of the customer
+        tests:
+          - not_null
+      - name: active
+        description: The status of the customer
+        tests:
+          - not_null
+      - name: last_order_id
+        description: The last order of the customer
+      - name: first_interaction
+        description: The first interaction of the customer
+        tests:
+          - not_null
+      - name: address_city
+        description: The city of the customer
+      - name: address_locality
+        description: The locality of the customer
+      - name: address_province
+        description: The province of the customer
+      - name: address_zipcode
+        description: The zipcode of the customer
+      - name: accepts_marketing
+        description: The marketing status of the customer
+        tests:
+          - not_null
+      - name: date_created_iso
+        description: The date when the customer was created (YYYYMMDD)
+        tests:
+          - not_null
+      - name: date_updated_iso
+        description: The date when the customer was updated (YYYYMMDD)
+        tests:
+          - not_null
+
+  - name: fact_most_frequent_customers
+    columns:
+      - name: customer_id
+        description: The natural key of the customer
+        tests:
+          - not_null
+      - name: customer_name
+        description: The name of the customer
+        tests:
+          - not_null
+      - name: total_orders
+        description: The total orders of the customer
+        tests:
+          - not_null
+      - name: total_discount_made
+        description: The total discount made by the customer
+        tests:
+          - not_null
+      - name: total_spent_ars
+        description: The total spent by the customer in ARS
+        tests:
+          - not_null
+      - name: total_spent_usd
+        description: The total spent by the customer in USD
+        tests:
+          - not_null

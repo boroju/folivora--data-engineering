@@ -13,6 +13,9 @@ config.ini
 *.duckdb
 *.duckdb.wal
 
+# .CSV
+*.csv
+
 # Distribution / packaging
 .Python
 build/

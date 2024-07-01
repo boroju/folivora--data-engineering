@@ -1,0 +1,22 @@
+select
+    order_id,
+    customer_id,
+    coupon_id,
+    subtotal,
+    discount,
+    total,
+    total_usd,
+    gateway,
+    gateway_name,
+    shipping_option,
+    storefront,
+    created_at,
+    updated_at,
+    completed_at_date,
+    completed_at_timezone,
+    next_action,
+    payment_details_method,
+    payment_status,
+    paid_at
+from
+    {{ ref('raw_orders') }}
